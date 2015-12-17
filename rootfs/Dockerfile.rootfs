@@ -1,0 +1,15 @@
+FROM debian:jessie
+MAINTAINER Andreas Eiermann <andreas@hypriot.com>
+
+RUN apt-get update && \
+apt-get install -y \
+qemu qemu-user-static \
+binfmt-support debootstrap \
+debian-ports-archive-keyring
+
+# create rootFS
+CMD echo rootfs && qemu-debootstrap --arch=arm64 --keyring \
+/usr/share/keyrings/debian-archive-keyring.gpg \
+--exclude=debfoster \
+jessie debian-arm64 http://ftp.debian.org/debian
+# && tar -czf /data/build_rootfs.tar.gz -C debian-arm64/ .

@@ -1,26 +1,18 @@
-FROM debian:jessie
+FROM rootfs:build
 MAINTAINER Andreas Eiermann <andreas@hypriot.com>
 
-RUN apt-get update && \
-apt-get install -y \
-qemu qemu-user-static \
-binfmt-support debootstrap
+# install some tools
+RUN echo tools && chroot debian-arm64/ /bin/bash -c "\
+apt-get update && \
+apt-get install -y net-tools openssh-server htop && \
+apt-get clean"
 
+# set root password and some network settings
+RUN echo config && echo 'root:shield'| chroot debian-arm64/ chpasswd \
+&& chroot debian-arm64/ systemctl enable networking.service \
+&& echo -e "auto eth0\niface eth0 inet dhcp\n" > \
+debian-arm64/etc/network/interfaces.d/eth0.cfg
 
-RUN apt-get install -y debian-ports-archive-keyring
-
-CMD qemu-debootstrap --arch=arm64 --keyring \
-/usr/share/keyrings/debian-archive-keyring.gpg --variant=buildd \
---exclude=debfoster jessie debian-arm64 http://ftp.debian.org/debian \
-&& chroot debian-arm64/ uname -a \
-&& apt-get install -y net-tools \
-&& echo 'root:shield'|chpasswd \
-&& tar -czf /data/aarch64.tar.gz -C debian-arm64/ .
-
-#RUN chroot debian-arm64/ apt-get install -y debian-ports-archive-keyring
-
-#RUN chroot debian-arm64/ apt-get install -y locales build-essential \
-#gcc g++ gdb make subversion git curl zip unzip
-
-
-
+#tar and save all layers
+CMD []
+#tar -czf /data/all_layers_aarch64.tar.gz -C debian-arm64/ .
