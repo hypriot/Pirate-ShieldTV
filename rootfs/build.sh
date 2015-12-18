@@ -1,10 +1,12 @@
 #!/bin/bash
 
+#:<<COM
 echo -e "#########\n# build rootfs #\n#########"
 docker build -t rootfs:dev -f Dockerfile.rootfs .
 docker run --name create-rootfs --privileged -v $(pwd)/result:/data rootfs:dev
 docker commit create-rootfs rootfs:build
 docker rm -vf create-rootfs
+#COM
 
 echo -e "#########\n# add configs #\n#########"
 docker build -t aarch64 -f Dockerfile .
@@ -13,6 +15,9 @@ docker build -t aarch64 -f Dockerfile .
 #docker run --rm -v $(pwd)/result:/data aarch64
 
 echo -e "#######\n# get all layers #\n#######"
+rm -f aarch64_image.tar
+rm -fr result 
+mkdir result
 docker save --output=aarch64_image.tar aarch64 
 docker history aarch64
 
